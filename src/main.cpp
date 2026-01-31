@@ -47,16 +47,7 @@ void setup() {
   // #endregion
   
   tft.init();
-  // #region agent log
-  logDebug("main.cpp:44", "tft_init_done", "", "A");
-  // #endregion
-  
-  tft.setRotation(1);  // 橫屏模式 (320x240)
-  tft.invertDisplay(true);  // 反轉顏色 (白變黑，黑變白)
-  // #region agent log
-  logDebug("main.cpp:49", "rotation_set", "\"rotation\":1", "C");
-  // #endregion
-  
+  tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
   // #region agent log
   logDebug("main.cpp:54", "fillScreen_done", "\"color\":0", "B");
@@ -109,7 +100,7 @@ void loop()
       {
         int screen_x = ((int)sx[i] - 160) * 256 / sz[i] + 160;
         int screen_y = ((int)sy[i] - 120) * 256 / sz[i] + 120;
-  
+
         if (screen_x >= 0 && screen_y >= 0 && screen_x < 320 && screen_y < 240)
         {
           uint8_t r, g, b;
