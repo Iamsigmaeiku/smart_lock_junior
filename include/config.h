@@ -38,9 +38,9 @@
 
 // ESP32 VSPI接腳定義 (硬體SPI)
 // ESP32 Technical Reference Manual Section 3.2.4 (SPI Peripheral)
-#define SPI_MOSI_PIN  23  // Master Out Slave In (主設備輸出)
-#define SPI_MISO_PIN  19  // Master In Slave Out (主設備輸入)
-#define SPI_SCK_PIN   18  // Serial Clock (時鐘訊號)
+//#define SPI_MOSI_PIN  23  // Master Out Slave In (主設備輸出)
+//#define SPI_MISO_PIN  19  // Master In Slave Out (主設備輸入)
+//#define SPI_SCK_PIN   18  // Serial Clock (時鐘訊號)
 
 // MFRC522專用控制腳位
 #define RFID_SS_PIN   21  // Slave Select / Chip Select (片選腳位)

@@ -32,7 +32,7 @@ void setup() {
 
   Serial.begin(115200);
   tft.init();
-  tft.setRotation(1);
+  tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
   // fastSetup() must be used immediately before fastPixel() to prepare screen
@@ -67,7 +67,7 @@ void loop()
       {
         int screen_x = ((int)sx[i] - 160) * 256 / sz[i] + 160;
         int screen_y = ((int)sy[i] - 120) * 256 / sz[i] + 120;
-
+  
         if (screen_x >= 0 && screen_y >= 0 && screen_x < 320 && screen_y < 240)
         {
           uint8_t r, g, b;
