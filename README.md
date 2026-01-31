@@ -23,17 +23,43 @@
 
 ```
 smart_lock_junior/
-├── platformio.ini          # PlatformIO配置文件
+├── platformio.ini                 # PlatformIO配置文件
 ├── src/
-│   └── main.cpp           # 主程式 (狀態機邏輯)
+│   ├── main.cpp                  # 主程式 (狀態機邏輯)
+│   ├── rfid_handler.cpp          # RFID模組實作 (MFRC522)
+│   ├── fingerprint_handler.cpp   # 指紋模組實作 (AS608)
+│   ├── servo_handler.cpp         # 伺服馬達實作 (SG90)
+│   └── display_handler.cpp       # 顯示器實作 (TFT_eSPI)
 ├── include/
-│   ├── config.h           # 硬體接腳定義與系統配置
-│   ├── rfid_handler.h     # RFID模組介面 (MFRC522)
-│   ├── fingerprint_handler.h  # 指紋模組介面 (AS608)
-│   ├── servo_handler.h    # 伺服馬達控制 (SG90)
-│   └── display_handler.h  # 顯示器介面 (TFT_eSPI)
-└── README.md              # 本文件
+│   ├── config.h                  # 硬體接腳定義與系統配置
+│   ├── rfid_handler.h            # RFID模組介面宣告
+│   ├── fingerprint_handler.h     # 指紋模組介面宣告
+│   ├── servo_handler.h           # 伺服馬達介面宣告
+│   └── display_handler.h         # 顯示器介面宣告
+└── README.md                     # 本文件
 ```
+
+### 程式架構說明
+
+本專案採用**標頭檔+實作檔案**的C++標準架構：
+
+- **標頭檔 (.h)**: 位於 `include/` 目錄
+  - 類別宣告
+  - 函式介面
+  - 詳細的datasheet章節註解
+  - 參數說明與使用範例
+
+- **實作檔 (.cpp)**: 位於 `src/` 目錄
+  - 函式骨架實作
+  - TODO標記 (需要你自行實作的部分)
+  - 詳細的技術說明與學習註解
+  - datasheet章節標註
+
+這種架構的優點：
+- ✅ 清晰的介面與實作分離
+- ✅ 更好的編譯優化
+- ✅ 符合C++專案最佳實踐
+- ✅ 便於模組化開發與測試
 
 ## 🔌 硬體連接
 
@@ -204,57 +230,72 @@ Flash Size: 4 MB
 
 ### 第二階段：實作模組功能
 
-每個模組的頭文件都包含：
-- ✅ **完整的函式介面**
-- ✅ **詳細的datasheet章節標註**
-- ✅ **技術原理說明**
-- ✅ **TODO標記** (需要你實作的部分)
+每個模組都包含標頭檔 (.h) 與實作檔 (.cpp)：
+
+**標頭檔 (include/*.h)**
+- ✅ 完整的類別宣告
+- ✅ 函式介面定義
+- ✅ 詳細的datasheet章節標註
+- ✅ 技術原理說明
+
+**實作檔 (src/*.cpp)**
+- ✅ 函式骨架實作
+- ✅ TODO標記 (需要你實作的部分)
+- ✅ 詳細的實作指引與提示
+- ✅ datasheet對應章節標註
 
 建議實作順序：
 
 #### 1. 伺服馬達控制 (最簡單)
-- 檔案: `servo_handler.h` / `servo_handler.cpp`
-- 學習重點: PWM原理、ESP32 LEDC
-- Datasheet參考:
-  - SG90 Datasheet Section 3
+- **標頭檔**: `include/servo_handler.h`
+- **實作檔**: `src/servo_handler.cpp`
+- **學習重點**: PWM原理、ESP32 LEDC
+- **Datasheet參考**:
+  - SG90 Datasheet Section 3 (Control Signal)
   - ESP32 TRM Section 14 (LEDC)
-- 實作函式:
+- **主要函式**:
   - `init()`: 初始化PWM通道
   - `setAngle()`: 設定角度 (0~180°)
   - `lock()` / `unlock()`: 上鎖/解鎖
+  - `smoothMove()`: 平滑移動 (進階)
 
 #### 2. TFT顯示器 (視覺回饋)
-- 檔案: `display_handler.h` / `display_handler.cpp`
-- 學習重點: SPI通訊、RGB565色彩、圖形渲染
-- Datasheet參考:
+- **標頭檔**: `include/display_handler.h`
+- **實作檔**: `src/display_handler.cpp`
+- **學習重點**: SPI通訊、RGB565色彩、圖形渲染
+- **Datasheet參考**:
   - ST7789V2 Section 8.4 (SPI Interface)
   - ST7789V2 Section 9 (Command Table)
-- 實作函式:
+  - ST7789V2 Section 13.2 (RGB565 Pixel Format)
+- **主要函式**:
   - `init()`: 初始化TFT_eSPI
   - `showWelcome()`: 設計歡迎畫面
   - `showUnlocked()` / `showAccessDenied()`: 狀態顯示
-  - 繪製圖示函式
+  - `drawLockIcon()` / `drawCheckmark()` / `drawCross()`: 圖示繪製
 
 #### 3. RFID讀卡器 (中等難度)
-- 檔案: `rfid_handler.h` / `rfid_handler.cpp`
-- 學習重點: SPI通訊、ISO14443A協定、防碰撞演算法
-- Datasheet參考:
+- **標頭檔**: `include/rfid_handler.h`
+- **實作檔**: `src/rfid_handler.cpp`
+- **學習重點**: SPI通訊、ISO14443A協定、防碰撞演算法
+- **Datasheet參考**:
   - MFRC522 Section 8.1 (SPI Interface)
-  - MFRC522 Section 9.3 (Card Detection)
+  - MFRC522 Section 9.3 (Card Detection and Anti-collision)
   - MFRC522 Section 10 (PICC Commands)
-- 實作函式:
+- **主要函式**:
   - `init()`: 初始化MFRC522，啟動天線
   - `isCardPresent()`: 發送REQA命令偵測卡片
   - `readCardUID()`: 讀取UID (實作防碰撞)
   - `verifyCard()`: 白名單驗證
 
 #### 4. 指紋感應器 (較複雜)
-- 檔案: `fingerprint_handler.h` / `fingerprint_handler.cpp`
-- 學習重點: UART通訊、封包協定、指紋辨識演算法
-- Datasheet參考:
+- **標頭檔**: `include/fingerprint_handler.h`
+- **實作檔**: `src/fingerprint_handler.cpp`
+- **學習重點**: UART通訊、封包協定、指紋辨識演算法
+- **Datasheet參考**:
   - AS608 Manual Section 4.2 (Package Protocol)
   - AS608 Manual Section 5 (Instruction System)
-- 實作函式:
+  - AS608 Manual Section 6 (Application Notes)
+- **主要函式**:
   - `init()`: 初始化UART，驗證密碼
   - `detectFinger()`: GenImg命令偵測手指
   - `captureFingerprint()`: Img2Tz提取特徵
