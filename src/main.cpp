@@ -1,131 +1,15 @@
-// Animates white pixels to simulate flying through a star field
-#include <Arduino.h>
-#include <SPI.h>
 #include <TFT_eSPI.h>
+#include<Arduino.h>
 
-// Debug helper
-void logDebug(const char* location, const char* message, const char* data, const char* hypId) {
-  Serial.print("{\"location\":\""); Serial.print(location);
-  Serial.print("\",\"message\":\""); Serial.print(message);
-  Serial.print("\",\"data\":{"); Serial.print(data);
-  Serial.print("},\"timestamp\":"); Serial.print(millis());
-  Serial.print(",\"sessionId\":\"debug-session\",\"hypothesisId\":\""); Serial.print(hypId);
-  Serial.println("\"}");
-}
-
-// Use hardware SPI
-TFT_eSPI tft = TFT_eSPI();
-
-// With 1024 stars the update rate is ~65 frames per second
-#define NSTARS 1024
-uint8_t sx[NSTARS] = {};
-uint8_t sy[NSTARS] = {};
-uint8_t sz[NSTARS] = {};
-
-uint8_t za, zb, zc, zx;
-
-// Fast 0-255 random number generator from http://eternityforest.com/Projects/rng.php:
-uint8_t __attribute__((always_inline)) rng()
-{
-  zx++;
-  za = (za^zc^zx);
-  zb = (zb+za);
-  zc = ((zc+(zb>>1))^za);
-  return zc;
-}
+TFT_eSPI tft;
 
 void setup() {
-  za = random(256);
-  zb = random(256);
-  zc = random(256);
-  zx = random(256);
-
-  Serial.begin(115200);
-  delay(2000);
-  // #region agent log
-  logDebug("main.cpp:40", "setup_start", "\"za\":0,\"zb\":0", "A");
-  // #endregion
-  
+  Serial.begin(9600);
   tft.init();
-  tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
-  // #region agent log
-  logDebug("main.cpp:54", "fillScreen_done", "\"color\":0", "B");
-  // #endregion
-  
-  // Test: draw some colored pixels to verify display works
-  // #region agent log
-  tft.drawPixel(10, 10, TFT_RED);
-  tft.drawPixel(20, 20, TFT_GREEN);
-  tft.drawPixel(30, 30, TFT_BLUE);
-  logDebug("main.cpp:61", "test_pixels_drawn", "\"red\":true,\"green\":true,\"blue\":true", "B");
 
-  // fastSetup() must be used immediately before fastPixel() to prepare screen
-  // It must be called after any other graphics drawing function call if fastPixel()
-  // is to be called again
-  //tft.fastSetup(); // Prepare plot window range for fast pixel plotting
+  uint32_t id = tft.readcommand32(0x04); 
+  Serial.print("Display ID: 0x");
+  Serial.println(id, HEX);
 }
 
-void loop()
-{
-  unsigned long t0 = micros();
-  uint8_t spawnDepthVariation = 255;
-  // #region agent log
-  static int loopCount = 0; 
-  if(loopCount < 3) { 
-    char buf[32]; snprintf(buf, 32, "\"loopCount\":%d", loopCount);
-    logDebug("main.cpp:70", "loop_start", buf, "E"); 
-    loopCount++; 
-  }
-  // #endregion
-
-  for(int i = 0; i < NSTARS; ++i)
-  {
-    if (sz[i] <= 1)
-    {
-      sx[i] = 160 - 120 + rng();
-      sy[i] = rng();
-      sz[i] = spawnDepthVariation--;
-    }
-    else
-    {
-      int old_screen_x = ((int)sx[i] - 160) * 256 / sz[i] + 160;
-      int old_screen_y = ((int)sy[i] - 120) * 256 / sz[i] + 120;
-
-      // This is a faster pixel drawing function for occasions where many single pixels must be drawn
-      tft.drawPixel(old_screen_x, old_screen_y,TFT_BLACK);
-
-      sz[i] -= 2;
-      if (sz[i] > 1)
-      {
-        int screen_x = ((int)sx[i] - 160) * 256 / sz[i] + 160;
-        int screen_y = ((int)sy[i] - 120) * 256 / sz[i] + 120;
-
-        if (screen_x >= 0 && screen_y >= 0 && screen_x < 320 && screen_y < 240)
-        {
-          uint8_t r, g, b;
-          r = g = b = 255 - sz[i];
-          // #region agent log
-          static int pixelCount = 0; 
-          if(pixelCount < 5) { 
-            char buf[64]; 
-            snprintf(buf, 64, "\"x\":%d,\"y\":%d,\"r\":%d,\"sz\":%d", screen_x, screen_y, r, sz[i]);
-            logDebug("main.cpp:94", "drawPixel", buf, "D"); 
-            pixelCount++; 
-          }
-          // #endregion
-          tft.drawPixel(screen_x, screen_y, tft.color565(r,g,b));
-        }
-        else
-          sz[i] = 0; // Out of screen, die.
-      }
-    }
-  }
-  unsigned long t1 = micros();
-  //static char timeMicros[8] = {};
-
- // Calculate frames per second
-  Serial.println(1.0/((t1 - t0)/1000000.0));
-}
-
-
+void loop() {}
