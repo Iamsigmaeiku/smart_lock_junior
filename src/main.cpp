@@ -1,5 +1,5 @@
 // Animates white pixels to simulate flying through a star field
-
+#include <Arduino.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
@@ -32,7 +32,7 @@ void setup() {
 
   Serial.begin(115200);
   tft.init();
-  tft.setRotation(0);
+  tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
 
   // fastSetup() must be used immediately before fastPixel() to prepare screen
