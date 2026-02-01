@@ -2,10 +2,14 @@
 #define RFID_H
 
 #include <Arduino.h>
+#include <MFRC522.h>
 
 // RFID RC522 控制類
 class RFID {
 public:
+  // 建構函數
+  RFID();
+
   // 初始化
   void init();
 
@@ -22,15 +26,22 @@ public:
   bool enrollCard();
 
 private:
-  // TODO: 添加必要的成員變數
-  // 例如:
-  // - MFRC522 物件（如果使用函式庫）
-  // - 已註冊卡片 UID 列表
-  // - 當前讀取的卡片 UID 緩衝區
+  MFRC522 mfrc522;
+  uint8_t currentUID[4];
+  uint8_t currentUIDLength;
 
-  // 範例骨架（不使用函式庫的情況）：
-  // uint8_t registeredCards[10][4];  // 最多 10 張卡片，每張 4 bytes UID
-  // uint8_t cardCount = 0;
+  static const uint8_t MAX_CARDS = 10;
+  static const uint8_t UID_SIZE = 4;
+  static const uint16_t EEPROM_SIZE = 64;
+  static const uint16_t EEPROM_ADDR_COUNT = 0;
+  static const uint16_t EEPROM_ADDR_CARDS = 1;
+
+  // 內部輔助函數
+  uint8_t getCardCount();
+  void saveCardCount(uint8_t count);
+  bool getCardUID(uint8_t index, uint8_t* uid);
+  void saveCardUID(uint8_t index, const uint8_t* uid);
+  bool isCardRegistered(const uint8_t* uid);
 };
 
 #endif
