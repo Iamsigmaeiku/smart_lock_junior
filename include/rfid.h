@@ -9,7 +9,7 @@ class RFID {
 public:
   // 建構函數
   RFID();
-  
+
   // 初始化
   void init();
 
@@ -29,13 +29,13 @@ private:
   MFRC522 mfrc522;
   uint8_t currentUID[4];
   uint8_t currentUIDLength;
-  
+
   static const uint8_t MAX_CARDS = 10;
   static const uint8_t UID_SIZE = 4;
   static const uint16_t EEPROM_SIZE = 64;
   static const uint16_t EEPROM_ADDR_COUNT = 0;
   static const uint16_t EEPROM_ADDR_CARDS = 1;
-  
+
   // 內部輔助函數
   uint8_t getCardCount();
   void saveCardCount(uint8_t count);
