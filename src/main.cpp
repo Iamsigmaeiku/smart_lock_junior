@@ -202,6 +202,13 @@ void loop() {
             if (verified) {
               display.showSuccess();
               doorMotor.unlock();
+              // ✅ Discord 推播（密碼成功）
+              if (wifiModule.isConnected()) {
+                String msg =
+                "🔓 **Smart Lock Unlocked**\n"
+                "Method: Password";
+              wifiModule.pushDiscord(msg);
+            }
               unlockStartMs = millis();
               isUnlocking = true;
               currentState = UNLOCKING;
@@ -232,6 +239,20 @@ void loop() {
       if (verified) {
         display.showSuccess();
         doorMotor.unlock();
+        // ✅ Discord 推播（指紋/RFID/人臉成功）
+      if (wifiModule.isConnected()) {
+        String method =
+        (lastAuthMethod == FINGERPRINT) ? "Fingerprint" :
+        (lastAuthMethod == RFID_CARD) ? "RFID" :
+        (lastAuthMethod == FACE_RECOGNITION) ? "Face" :
+        (lastAuthMethod == PASSWORD) ? "Password" : "Unknown";
+
+      String msg =
+        "🔓 **Smart Lock Unlocked**\n"
+        "Method: " + method;
+
+      wifiModule.pushDiscord(msg);
+  }
         unlockStartMs = millis();
         isUnlocking = true;
         currentState = UNLOCKING;

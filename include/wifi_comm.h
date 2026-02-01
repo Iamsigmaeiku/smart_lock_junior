@@ -22,6 +22,8 @@ public:
 
     bool isConnected() const;
     State state() const;
+    //推播
+    bool pushDiscord(const String &msg);
 
 private:
     const char* _ssid = nullptr;
