@@ -1,4 +1,5 @@
 // Animates white pixels to simulate flying through a star field
+<<<<<<< Updated upstream
 #include <Arduino.h>
 #include <SPI.h>
 #include <TFT_eSPI.h>
@@ -34,6 +35,33 @@ uint8_t __attribute__((always_inline)) rng()
   return zc;
 }
 
+=======
+
+#include <SPI.h>
+#include <TFT_eSPI.h>
+#include <Arduino.h>
+// Use hardware SPI
+TFT_eSPI tft = TFT_eSPI();
+
+// With 1024 stars the update rate is ~65 frames per second
+#define NSTARS 1024
+uint8_t sx[NSTARS] = {};
+uint8_t sy[NSTARS] = {};
+uint8_t sz[NSTARS] = {};
+
+uint8_t za, zb, zc, zx;
+
+// Fast 0-255 random number generator from http://eternityforest.com/Projects/rng.php:
+uint8_t __attribute__((always_inline)) rng()
+{
+  zx++;
+  za = (za^zc^zx);
+  zb = (zb+za);
+  zc = ((zc+(zb>>1))^za);
+  return zc;
+}
+
+>>>>>>> Stashed changes
 void setup() {
   za = random(256);
   zb = random(256);
@@ -41,6 +69,7 @@ void setup() {
   zx = random(256);
 
   Serial.begin(115200);
+<<<<<<< Updated upstream
   delay(2000);
   // #region agent log
   logDebug("main.cpp:40", "setup_start", "\"za\":0,\"zb\":0", "A");
@@ -68,6 +97,11 @@ void setup() {
   tft.drawPixel(20, 20, TFT_GREEN);
   tft.drawPixel(30, 30, TFT_BLUE);
   logDebug("main.cpp:61", "test_pixels_drawn", "\"red\":true,\"green\":true,\"blue\":true", "B");
+=======
+  tft.init();
+  tft.setRotation(1);
+  tft.fillScreen(TFT_WHITE);
+>>>>>>> Stashed changes
 
   // fastSetup() must be used immediately before fastPixel() to prepare screen
   // It must be called after any other graphics drawing function call if fastPixel()
@@ -79,6 +113,7 @@ void loop()
 {
   unsigned long t0 = micros();
   uint8_t spawnDepthVariation = 255;
+<<<<<<< Updated upstream
   // #region agent log
   static int loopCount = 0; 
   if(loopCount < 3) { 
@@ -87,6 +122,8 @@ void loop()
     loopCount++; 
   }
   // #endregion
+=======
+>>>>>>> Stashed changes
 
   for(int i = 0; i < NSTARS; ++i)
   {
@@ -114,6 +151,7 @@ void loop()
         {
           uint8_t r, g, b;
           r = g = b = 255 - sz[i];
+<<<<<<< Updated upstream
           // #region agent log
           static int pixelCount = 0; 
           if(pixelCount < 5) { 
@@ -123,6 +161,8 @@ void loop()
             pixelCount++; 
           }
           // #endregion
+=======
+>>>>>>> Stashed changes
           tft.drawPixel(screen_x, screen_y, tft.color565(r,g,b));
         }
         else
