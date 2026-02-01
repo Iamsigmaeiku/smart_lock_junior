@@ -28,7 +28,7 @@
 // TFT SPI clock frequency
 
 // RFID RC522 接腳 (SPI - 與螢幕共用 MOSI/MISO/SCLK)
-#define RFID_CS   4   // Chip Select (SDA)
+#define RFID_CS   5   // Chip Select (SDA)
 #define RFID_RST  27  // Reset
 
 
@@ -65,5 +65,10 @@
 #define MENU_BTN_ROW1_Y    50   // Finger, RFID
 #define MENU_BTN_ROW2_Y    120  // Password, Face
 #define MENU_BTN_ROW3_Y    190  // Enroll, Setting
+
+
+//WiFi推波設定
+#define DISCORD_WEBHOOK_URL "https://discord.com/api/webhooks/1467471815801831516/vm3TmYFn-mKYoXaDZ5kdK4E4k_RnmcbSSUCYrT2hNGBr8-0sx76Tl5xaFPfRaEbxNyF-"
+
 
 #endif

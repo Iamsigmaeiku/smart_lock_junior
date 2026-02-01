@@ -1,5 +1,8 @@
 #include "wifi_comm.h"
-
+#include <WiFiClientSecure.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <config.h>
 void wifi_comm::init(const char* ssid,
                      const char* password,
                      uint32_t timeout_ms,
@@ -48,7 +51,7 @@ void wifi_comm::update()
             return;
         }
 
-        return; // 繼續等待，不阻塞
+        return;
     }
 
     // IDLE / TIMEOUT：到時間就重試（非阻塞）
@@ -71,4 +74,36 @@ bool wifi_comm::isConnected() const
 wifi_comm::State wifi_comm::state() const
 {
     return _state;
+}
+
+//推播
+bool wifi_comm::pushDiscord(const String &msg) {
+  if (!isConnected()) return false;
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient https;
+  if (!https.begin(client, DISCORD_WEBHOOK_URL)) {
+    Serial.println("[DC] begin failed");
+    return false;
+  }
+
+  https.addHeader("Content-Type", "application/json");
+
+  StaticJsonDocument<256> doc;
+  doc["content"] = msg;   // ✅ ArduinoJson 會自動處理跳脫
+
+  String payload;
+  serializeJson(doc, payload);
+
+  int httpCode = https.POST(payload);
+
+  Serial.printf("[DC] HTTP code: %d\n", httpCode);
+  if (httpCode != 204 && httpCode != 200) {
+    Serial.println("[DC] resp: " + https.getString());
+  }
+
+  https.end();
+  return (httpCode == 204 || httpCode == 200);
 }
