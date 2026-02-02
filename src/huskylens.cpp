@@ -5,7 +5,12 @@
 #include "config.h"
 #include <Wire.h>
 
+#include "huskylens.h"
+#include "config.h"
+#include <Wire.h>
+
 void HuskyLens::init() {
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   // TODO: 初始化 HUSKYLENS AI 辨識鏡頭
 
@@ -62,6 +67,11 @@ void HuskyLens::init() {
   Serial.println("HUSKYLENS 模組已禁用");
   isInitialized = false;
 >>>>>>> Stashed changes
+=======
+  // 暫時禁用 HUSKYLENS 功能
+  Serial.println("HUSKYLENS 模組已禁用");
+  isInitialized = false;
+>>>>>>> Stashed changes
 }
 
 bool HuskyLens::detectFace() {
@@ -76,6 +86,7 @@ int HuskyLens::recognizeFace() {
 
 bool HuskyLens::verifyFace() {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   // TODO: 驗證人臉是否為已註冊使用者
 
   int faceID = recognizeFace();
@@ -87,6 +98,9 @@ bool HuskyLens::verifyFace() {
   }
 
   Serial.println("驗證失敗！未辨識到已註冊人臉");
+=======
+  // 暫時禁用
+>>>>>>> Stashed changes
 =======
   // 暫時禁用
 >>>>>>> Stashed changes
