@@ -39,10 +39,9 @@
 #define TS_MINY 340
 #define TS_MAXY 3740
 
-// HUSKYLENS AI 辨識鏡頭接腳 (I2C)
-#define HUSKYLENS_SDA 21  // I2C 資料線
-#define HUSKYLENS_SCL 22  // I2C 時鐘線
-#define HUSKYLENS_I2C_ADDR 0x32  // I2C 地址（預設）
+// HUSKYLENS AI 辨識鏡頭接腳 (UART)
+#define HUSKYLENS_RX 26   // ESP32 RX <- HuskyLens TX (藍線)
+#define HUSKYLENS_TX 25  // ESP32 TX -> HuskyLens RX (綠線)
 
 // ========================================
 // 系統設定

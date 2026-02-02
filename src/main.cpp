@@ -4,7 +4,7 @@
 #include "screen.h"
 #include "motor.h"
 #include "rfid.h"
-#include "huskylens.h"
+#include "husky_lens.h"
 #include "wifi_comm.h"
 #include "password.h"
 #define DEBUG_TOUCH_DOT  0   // 改 0 就關掉畫點除錯
