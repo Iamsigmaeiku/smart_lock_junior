@@ -155,3 +155,4 @@ int HuskyLens::getObjectCount() {
   // 回傳物件數量
   return huskylens.count();
 }
+
