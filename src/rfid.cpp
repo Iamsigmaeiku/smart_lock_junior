@@ -1,16 +1,16 @@
-#include "rfid.h"
-#include "config.h"
-#include <SPI.h>
-#include <EEPROM.h>
+#include "rfid.h"//宣告rfid.h
+#include "config.h"//宣告config.h
+#include <SPI.h>//宣告SPI.h
+#include <EEPROM.h>//宣告EEPROM.h
 
 // 建構函數：初始化 MFRC522 物件
-RFID::RFID() : mfrc522(RFID_CS, RFID_RST) {
-  currentUIDLength = 0;
-  memset(currentUID, 0, sizeof(currentUID));
+RFID::RFID() : mfrc522(RFID_CS, RFID_RST) {//宣告建構函數RFID，告訴它RFID_CS和RFID_RST這兩條控制線是什麼
+  currentUIDLength = 0;//宣告currentUIDLength = 0; 語法 類型 變數名稱 = 值;
+  memset(currentUID, 0, sizeof(currentUID));//宣告memset(currentUID, 0, sizeof(currentUID)); 語法 memset(參數, 參數, 參數);
 }
 
-void RFID::init() {
-  Serial.println("初始化 RFID 模組...");
+void RFID::init() {//宣告普通函數RFID::init() {語法 類型 函數名稱() {
+  Serial.println("初始化 RFID 模組...");//印出初始化 RFID 模組...
 
   // 1. 初始化 SPI (與螢幕共用，可能已經初始化過了)
   SPI.begin();
