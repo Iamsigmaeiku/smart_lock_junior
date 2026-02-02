@@ -254,3 +254,4 @@ int HuskyLens::getObjectCount() {
   return huskylens.count();
 >>>>>>> bb5e69dcbe42aa418a3e417576bff5c70debf65c
 }
+
