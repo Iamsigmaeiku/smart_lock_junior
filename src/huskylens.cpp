@@ -1,37 +1,8 @@
+//huskylens.cpp
 #include "husky_lens.h"
 #include "config.h"
 
-#include "huskylens.h"
-#include "config.h"
-#include <Wire.h>
-
-#include "huskylens.h"
-#include "config.h"
-#include <Wire.h>
-
 void HuskyLens::init() {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  // TODO: 初始化 HUSKYLENS AI 辨識鏡頭
-
-  // 1. 初始化 I2C 通訊
-  // Wire.begin(HUSKYLENS_SDA, HUSKYLENS_SCL);
-
-  // 2. 初始化 HUSKYLENS 物件（如果使用函式庫）
-  // huskylens.begin(Wire);
-
-  // 3. 等待 HUSKYLENS 啟動
-  // delay(100);
-
-  // 4. 設定演算法為人臉辨識模式
-  // huskylens.writeAlgorithm(ALGORITHM_FACE_RECOGNITION);
-
-  // 5. 檢查連線狀態
-  // if (!huskylens.isConnected()) {
-  //   Serial.println("HUSKYLENS 連線失敗！");
-  //   return;
-  // }
-
   Serial.println("初始化 HUSKYLENS 模組...");
 
   // 初始化成員變數
@@ -62,33 +33,63 @@ void HuskyLens::init() {
   delay(100);
   isInitialized = true;
   Serial.println("HUSKYLENS 初始化完成！");
-=======
-  // 暫時禁用 HUSKYLENS 功能
-  Serial.println("HUSKYLENS 模組已禁用");
-  isInitialized = false;
->>>>>>> Stashed changes
-=======
-  // 暫時禁用 HUSKYLENS 功能
-  Serial.println("HUSKYLENS 模組已禁用");
-  isInitialized = false;
->>>>>>> Stashed changes
 }
 
 bool HuskyLens::detectFace() {
-  // 暫時禁用
+  if (!isInitialized) return false;
+
+  // 請求 HUSKYLENS 讀取資料
+  if (!huskylens.request()) {
+    return false;
+  }
+
+  // 檢查是否有偵測到物件（人臉）
+  if (huskylens.available()) {
+    int count = huskylens.count();
+    if (count > 0) {
+      Serial.printf("偵測到 %d 個人臉\n", count);
+      return true;
+    }
+  }
+
   return false;
 }
 
 int HuskyLens::recognizeFace() {
-  // 暫時禁用
-  return -1;
+  if (!isInitialized) return -1;
+
+  // 請求 HUSKYLENS 讀取資料
+  if (!huskylens.request()) {
+    return -1;
+  }
+
+  // 如果有辨識到人臉
+  if (huskylens.available()) {
+    // 讀取第一個辨識結果
+    HUSKYLENSResult result = huskylens.read();
+
+    // 檢查是否為已學習的人臉（ID > 0）
+    // ID = 0 代表未學習的人臉
+    // ID > 0 代表已學習的人臉
+    if (result.ID > 0) {
+      lastRecognizedID = result.ID;
+      Serial.printf("辨識到人臉 ID: %d\n", result.ID);
+      return result.ID;
+    } else {
+      Serial.println("偵測到未學習的人臉");
+    }
+  }
+
+  return -1; // 未辨識到或陌生人
 }
 
 bool HuskyLens::verifyFace() {
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-  // TODO: 驗證人臉是否為已註冊使用者
+  if (!isInitialized) {
+    Serial.println("HUSKYLENS 未初始化！");
+    return false;
+  }
 
+  // 辨識人臉並取得 ID
   int faceID = recognizeFace();
 
   // 如果 ID > 0，代表是已註冊的人臉
@@ -97,31 +98,61 @@ bool HuskyLens::verifyFace() {
     return true;
   }
 
-  Serial.println("驗證失敗！未辨識到已註冊人臉");
-=======
-  // 暫時禁用
->>>>>>> Stashed changes
-=======
-  // 暫時禁用
->>>>>>> Stashed changes
+  Serial.println("✗ 驗證失敗！未辨識到已註冊人臉");
   return false;
 }
 
 bool HuskyLens::learnFace(uint8_t faceID) {
-  // 暫時禁用
-  Serial.print("HUSKYLENS 學習功能已禁用，ID: ");
-  Serial.println(faceID);
+  if (!isInitialized) {
+    Serial.println("HUSKYLENS 未初始化！");
+    return false;
+  }
+
+  Serial.printf("準備學習人臉 ID: %d\n", faceID);
+  Serial.println("請將臉對準鏡頭...");
+
+  // 等待偵測到人臉
+  unsigned long startTime = millis();
+  while (millis() - startTime < 10000) {  // 10秒超時
+    if (huskylens.request() && huskylens.available()) {
+      // 使用 writeLearn 指令學習當前人臉
+      if (huskylens.writeLearn(faceID)) {
+        Serial.printf("✓ 學習成功！已註冊人臉 ID: %d\n", faceID);
+        delay(100);
+        return true;
+      }
+    }
+    delay(100);
+  }
+
+  Serial.println("✗ 學習失敗！請確保有偵測到人臉");
   return false;
 }
 
-void HuskyLens::setAlgorithm(uint8_t algorithm) {
-  // 暫時禁用
-  Serial.print("HUSKYLENS 演算法切換已禁用: ");
-  Serial.println(algorithm);
+void HuskyLens::setAlgorithm(protocolAlgorithm algorithm) {
+  if (!isInitialized) {
+    Serial.println("HUSKYLENS 未初始化！");
+    return;
+  }
+
+  Serial.printf("切換演算法模式: %d\n", (int)algorithm);
+
+  if (huskylens.writeAlgorithm(algorithm)) {
+    Serial.println("✓ 切換成功");
+    delay(100);  // 等待切換完成
+  } else {
+    Serial.println("✗ 切換失敗");
+  }
 }
 
 int HuskyLens::getObjectCount() {
-  // 暫時禁用
-  return 0;
-}
+  if (!isInitialized) return 0;
 
+  // 請求最新資料
+  if (!huskylens.request()) {
+    return 0;
+  }
+
+  // 回傳物件數量
+  return huskylens.count();
+}

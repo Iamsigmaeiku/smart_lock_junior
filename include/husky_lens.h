@@ -1,4 +1,5 @@
-#ifndef HUSKYLENS_WRAPPER_H
+ //husky_lens.h
+ #ifndef HUSKYLENS_WRAPPER_H
 #define HUSKYLENS_WRAPPER_H
 
 #include <Arduino.h>
