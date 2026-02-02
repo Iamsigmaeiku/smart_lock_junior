@@ -1,7 +1,12 @@
 #include "husky_lens.h"
 #include "config.h"
 
+#include "huskylens.h"
+#include "config.h"
+#include <Wire.h>
+
 void HuskyLens::init() {
+<<<<<<< Updated upstream
   // TODO: 初始化 HUSKYLENS AI 辨識鏡頭
 
   // 1. 初始化 I2C 通訊
@@ -52,44 +57,25 @@ void HuskyLens::init() {
   delay(100);
   isInitialized = true;
   Serial.println("HUSKYLENS 初始化完成！");
+=======
+  // 暫時禁用 HUSKYLENS 功能
+  Serial.println("HUSKYLENS 模組已禁用");
+  isInitialized = false;
+>>>>>>> Stashed changes
 }
 
 bool HuskyLens::detectFace() {
-  // TODO: 檢測是否有人臉出現在畫面中
-
-  // 1. 請求 HUSKYLENS 讀取資料
-  // huskylens.request();
-
-  // 2. 檢查是否有偵測到物件（人臉）
-  // if (huskylens.available()) {
-  //   return huskylens.count() > 0;
-  // }
-
+  // 暫時禁用
   return false;
 }
 
 int HuskyLens::recognizeFace() {
-  // TODO: 辨識人臉並返回已學習的 ID
-
-  // 1. 請求 HUSKYLENS 讀取資料
-  // huskylens.request();
-
-  // 2. 如果有辨識到人臉
-  // if (huskylens.available()) {
-  //   HUSKYLENSResult result = huskylens.read();
-  //
-  //   // 檢查是否為已學習的人臉（ID > 0）
-  //   if (result.ID > 0) {
-  //     Serial.print("辨識到人臉 ID: ");
-  //     Serial.println(result.ID);
-  //     return result.ID;
-  //   }
-  // }
-
-  return -1; // 未辨識到或陌生人
+  // 暫時禁用
+  return -1;
 }
 
 bool HuskyLens::verifyFace() {
+<<<<<<< Updated upstream
   // TODO: 驗證人臉是否為已註冊使用者
 
   int faceID = recognizeFace();
@@ -101,41 +87,26 @@ bool HuskyLens::verifyFace() {
   }
 
   Serial.println("驗證失敗！未辨識到已註冊人臉");
+=======
+  // 暫時禁用
+>>>>>>> Stashed changes
   return false;
 }
 
 bool HuskyLens::learnFace(uint8_t faceID) {
-  // TODO: 學習新人臉（註冊新使用者）
-
-  // 學習模式通常需要：
-  // 1. 切換到學習模式（長按 HUSKYLENS 的學習按鈕，或透過指令）
-  // 2. 等待使用者將臉對準鏡頭
-  // 3. HUSKYLENS 會自動拍攝並學習該人臉
-  // 4. 學習完成後會分配一個 ID
-
-  // 注意：學習功能可能需要透過 HUSKYLENS 的按鈕操作
-  // 部分函式庫可能不支援程式化學習
-
-  Serial.print("請在 HUSKYLENS 前擺好姿勢，準備學習人臉 ID: ");
+  // 暫時禁用
+  Serial.print("HUSKYLENS 學習功能已禁用，ID: ");
   Serial.println(faceID);
-
   return false;
 }
 
 void HuskyLens::setAlgorithm(uint8_t algorithm) {
-  // TODO: 切換 HUSKYLENS 的演算法模式
-
-  // huskylens.writeAlgorithm(algorithm);
-
-  Serial.print("切換演算法模式: ");
+  // 暫時禁用
+  Serial.print("HUSKYLENS 演算法切換已禁用: ");
   Serial.println(algorithm);
 }
 
 int HuskyLens::getObjectCount() {
-  // TODO: 獲取當前辨識到的物件數量
-
-  // huskylens.request();
-  // return huskylens.count();
-
+  // 暫時禁用
   return 0;
 }
