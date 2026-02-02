@@ -29,7 +29,7 @@
 
 // RFID RC522 接腳 (SPI - 與螢幕共用 MOSI/MISO/SCLK)
 #define RFID_CS   5   // Chip Select (SDA)
-#define RFID_RST  22  // Reset
+#define RFID_RST  0  // Reset
 
 
 
