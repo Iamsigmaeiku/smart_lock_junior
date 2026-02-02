@@ -40,8 +40,8 @@
 #define TS_MAXY 3740
 
 // HUSKYLENS AI 辨識鏡頭接腳 (UART)
-#define HUSKYLENS_RX 9   // ESP32 RX <- HuskyLens TX (藍線)
-#define HUSKYLENS_TX 10  // ESP32 TX -> HuskyLens RX (綠線)
+#define HUSKYLENS_RX 26   // ESP32 RX <- HuskyLens TX (藍線)
+#define HUSKYLENS_TX 25  // ESP32 TX -> HuskyLens RX (綠線)
 
 // ========================================
 // 系統設定
