@@ -6,7 +6,7 @@
 // 建構函數：初始化 MFRC522 物件
 RFID::RFID() : mfrc522(RFID_CS, RFID_RST) {//宣告建構函數RFID，告訴它RFID_CS和RFID_RST這兩條控制線是什麼
   currentUIDLength = 0;//宣告currentUIDLength = 0; 語法 類型 變數名稱 = 值;
-  memset(currentUID, 0, sizeof(currentUID));//宣告memset(currentUID, 0, sizeof(currentUID)); 語法 memset(參數, 參數, 參數);
+  memset(currentUID, 0, sizeof(currentUID));//宣告memset(currentUID, 0, sizeof(currentUID)); 語法 memset(指標, 要填的值, 填多少bytes);
 }
 
 void RFID::init() {//宣告普通函數RFID::init() {語法 類型 函數名稱() {
