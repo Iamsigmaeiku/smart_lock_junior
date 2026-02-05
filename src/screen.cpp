@@ -218,6 +218,40 @@ void Screen::showPasswordInput() {
   Serial.println("顯示：密碼輸入介面");
 }
 
+void Screen::showChangePasswordInput(const char* title) {
+  tft.fillScreen(BLACK);
+
+  tft.setTextSize(2);
+  tft.setTextColor(WHITE);
+  tft.setCursor(10, 10);
+  tft.print(title);
+
+  tft.drawLine(20, 55, 220, 55, WHITE);
+
+  const char* keys[4][3] = {
+    {"1", "2", "3"},
+    {"4", "5", "6"},
+    {"7", "8", "9"},
+    {"*", "0", "#"}
+  };
+
+  for (int row = 0; row < 4; row++) {
+    for (int col = 0; col < 3; col++) {
+      int16_t x = 10 + col * 75;
+      int16_t y = 80 + row * 60;
+
+      uint16_t color = BLUE;
+      if (row == 3 && col == 0) color = GREEN;
+      if (row == 3 && col == 2) color = RED;
+
+      drawButton(x, y, 70, 50, color, keys[row][col], 3);
+    }
+  }
+
+  Serial.print("顯示：");
+  Serial.println(title);
+}
+
 Screen::Rect Screen::getMenuButtonRect(uint8_t index) {
   Rect r{0,0,0,0};
   if (index > 5) return r;

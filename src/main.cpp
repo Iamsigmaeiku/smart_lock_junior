@@ -28,10 +28,19 @@ enum SystemState {
   VERIFYING,
   UNLOCKING,
   LOCKED,
-  ENROLLING
+  ENROLLING,
+  CHANGE_PASSWORD
 };
 
 SystemState currentState = IDLE;
+
+enum ChangePasswordStep {
+  ENTER_OLD_PASSWORD,
+  ENTER_NEW_PASSWORD,
+  CONFIRM_NEW_PASSWORD
+};
+
+ChangePasswordStep changePasswordStep = ENTER_OLD_PASSWORD;
 
 enum AuthMethod {
   NONE,
@@ -136,7 +145,10 @@ void loop() {
           break;
 
         case 5: // Setting
-          Serial.println("選擇：Setting（未實作）");
+          Serial.println("選擇：修改密碼");
+          currentState = CHANGE_PASSWORD;
+          changePasswordStep = ENTER_OLD_PASSWORD;
+          display.showChangePasswordInput("Enter Old Password");
           break;
       }
 
@@ -284,7 +296,110 @@ void loop() {
         currentState = MENU;
         display.showMainMenu();
       }
-      break;    default:
+      break;
+
+    case CHANGE_PASSWORD: {
+      static String enteredPW = "";
+      static String oldPW = "";
+      static String newPW = "";
+      static unsigned long lastTouchTime = 0;
+
+      if (display.isTouched()) {
+        if (millis() - lastTouchTime < 200) break;
+        lastTouchTime = millis();
+
+        int16_t x, y;
+        display.getTouchPoint(x, y);
+        int8_t key = display.getKeypadPress(x, y);
+
+        // 數字鍵 0-9：累加輸入
+        if (key >= 0 && key <= 9) {
+          if (enteredPW.length() < 8) {
+            enteredPW += String(key);
+            display.updatePasswordDisplay(enteredPW);
+          }
+        }
+        // * 鍵（key=10）：清除輸入
+        else if (key == 10) {
+          enteredPW = "";
+          display.updatePasswordDisplay(enteredPW);
+        }
+        // # 鍵（key=11）：確認並進入下一步
+        else if (key == 11) {
+          // 檢查長度
+          if (enteredPW.length() < 4) {
+            display.showFailed();
+            delay(1500);
+            enteredPW = "";
+            if (changePasswordStep == ENTER_OLD_PASSWORD) {
+              display.showChangePasswordInput("Enter Old Password");
+            } else if (changePasswordStep == ENTER_NEW_PASSWORD) {
+              display.showChangePasswordInput("Enter New Password");
+            } else {
+              display.showChangePasswordInput("Confirm New Password");
+            }
+          } else {
+            // 根據當前步驟處理
+            if (changePasswordStep == ENTER_OLD_PASSWORD) {
+              // 驗證舊密碼
+              if (pwManager.verifyPassword(enteredPW)) {
+                oldPW = enteredPW;
+                enteredPW = "";
+                changePasswordStep = ENTER_NEW_PASSWORD;
+                display.showChangePasswordInput("Enter New Password");
+              } else {
+                display.showFailed();
+                delay(2000);
+                enteredPW = "";
+                display.showChangePasswordInput("Enter Old Password");
+              }
+            } else if (changePasswordStep == ENTER_NEW_PASSWORD) {
+              // 儲存新密碼待確認
+              newPW = enteredPW;
+              enteredPW = "";
+              changePasswordStep = CONFIRM_NEW_PASSWORD;
+              display.showChangePasswordInput("Confirm New Password");
+            } else if (changePasswordStep == CONFIRM_NEW_PASSWORD) {
+              // 確認密碼是否一致
+              if (enteredPW == newPW) {
+                // 執行密碼修改
+                if (pwManager.changePassword(oldPW, newPW)) {
+                  display.showSuccess();
+                  delay(2000);
+                  // 重置變數
+                  enteredPW = "";
+                  oldPW = "";
+                  newPW = "";
+                  changePasswordStep = ENTER_OLD_PASSWORD;
+                  currentState = MENU;
+                  display.showMainMenu();
+                } else {
+                  display.showFailed();
+                  delay(2000);
+                  enteredPW = "";
+                  oldPW = "";
+                  newPW = "";
+                  changePasswordStep = ENTER_OLD_PASSWORD;
+                  currentState = MENU;
+                  display.showMainMenu();
+                }
+              } else {
+                // 兩次輸入不一致
+                display.showFailed();
+                delay(2000);
+                enteredPW = "";
+                newPW = "";
+                changePasswordStep = ENTER_NEW_PASSWORD;
+                display.showChangePasswordInput("Enter New Password");
+              }
+            }
+          }
+        }
+      }
+      break;
+    }
+
+    default:
       break;
   }
 }

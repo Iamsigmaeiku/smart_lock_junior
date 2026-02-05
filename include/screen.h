@@ -27,6 +27,7 @@ Rect getMenuButtonRect(uint8_t index); // 0..5
   // 密碼輸入UI
   void showMainMenu();                                // 主選單（選擇驗證方式）
   void showPasswordInput();                           // 顯示密碼輸入介面
+  void showChangePasswordInput(const char* title);    // 顯示密碼修改介面（可自訂標題）
   void updatePasswordDisplay(String maskedPW);        // 更新密碼顯示
   int8_t getKeypadPress(int16_t x, int16_t y);        // 判斷按了哪個鍵（返回0-9或特殊鍵）
 
