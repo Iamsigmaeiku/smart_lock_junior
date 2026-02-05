@@ -576,42 +576,104 @@ void Screen::showAddPassword() {
   Serial.println("顯示：新增密碼");
 }
 
-void Screen::showRemoveMenu(uint8_t type) {
+void Screen::showRemoveMenu(uint8_t type, uint8_t* ids, uint8_t count) {
   tft.fillScreen(BG_DARK);
   
   const char* titles[4] = { "Remove Finger", "Remove Face", "Remove RFID", "Remove Pass" };
   const uint16_t colors[4] = { PASTEL_PINK, PASTEL_GREEN, PASTEL_ORANGE, PASTEL_BLUE };
-  const char* icons[4] = { "F", "A", "R", "P" };
   
   if (type > 3) type = 0;
   
   drawHeader(titles[type], true, false);
   
-  // 主內容卡片
-  tft.fillRoundRect(20, 70, 200, 180, 16, colors[type]);
+  // 如果沒有任何項目
+  if (count == 0) {
+    // 顯示空列表訊息
+    tft.fillRoundRect(20, 80, 200, 120, 16, colors[type]);
+    tft.setTextSize(2);
+    tft.setTextColor(TEXT_DARK);
+    tft.setCursor(40, 110);
+    tft.print("No items");
+    tft.setCursor(45, 140);
+    tft.print("to remove");
+    
+    Serial.printf("顯示：刪除選單 (type=%d, count=0)\n", type);
+    return;
+  }
   
-  // 大圖標
-  tft.setTextSize(5);
-  tft.setTextColor(TEXT_DARK);
-  tft.setCursor(90, 90);
-  tft.print(icons[type]);
+  // 顯示項目列表（2列網格佈局，最多8個）
+  const int16_t startY = 60;
+  const int16_t btnW = 95;
+  const int16_t btnH = 40;
+  const int16_t gapX = 10;
+  const int16_t gapY = 10;
+  const int16_t maxDisplay = min(count, (uint8_t)8);
   
-  // 提示文字
-  tft.setTextSize(2);
-  tft.setTextColor(TEXT_DARK);
-  tft.setCursor(40, 150);
-  tft.print("Select ID");
-  tft.setCursor(45, 175);
-  tft.print("to remove:");
+  for (uint8_t i = 0; i < maxDisplay; i++) {
+    int16_t col = i % 2;
+    int16_t row = i / 2;
+    int16_t x = 20 + col * (btnW + gapX);
+    int16_t y = startY + row * (btnH + gapY);
+    
+    // 繪製按鈕
+    tft.fillRoundRect(x, y, btnW, btnH, 8, colors[type]);
+    
+    // 顯示 ID 或索引
+    char label[16];
+    if (type == 2) {
+      // RFID: 顯示 "Card X"
+      snprintf(label, sizeof(label), "Card %d", i);
+    } else if (type == 3) {
+      // Password: 顯示 "Reset"
+      snprintf(label, sizeof(label), "Reset");
+    } else {
+      // Finger/Face: 顯示 "ID: X"
+      snprintf(label, sizeof(label), "ID: %d", ids[i]);
+    }
+    
+    tft.setTextSize(1);
+    tft.setTextColor(TEXT_DARK);
+    int16_t labelW = strlen(label) * 6;
+    int16_t labelX = x + (btnW - labelW) / 2;
+    int16_t labelY = y + (btnH - 8) / 2;
+    tft.setCursor(labelX, labelY);
+    tft.print(label);
+  }
   
-  // 示例列表（簡化）
-  tft.setTextSize(1);
-  tft.setCursor(30, 205);
-  tft.print("ID 1  ID 2  ID 3");
-  tft.setCursor(30, 225);
-  tft.print("[Tap to remove]");
+  // 如果有超過8個項目，顯示提示
+  if (count > 8) {
+    tft.setTextSize(1);
+    tft.setTextColor(HEADER_BG);
+    tft.setCursor(30, 230);
+    tft.printf("Showing %d/%d items", maxDisplay, count);
+  }
   
-  Serial.printf("顯示：刪除選單 (type=%d)\n", type);
+  Serial.printf("顯示：刪除選單 (type=%d, count=%d)\n", type, count);
+}
+
+int8_t Screen::getRemoveMenuPress(int16_t x, int16_t y, uint8_t count) {
+  if (count == 0) return -1;
+  
+  const int16_t startY = 60;
+  const int16_t btnW = 95;
+  const int16_t btnH = 40;
+  const int16_t gapX = 10;
+  const int16_t gapY = 10;
+  const int16_t maxDisplay = min(count, (uint8_t)8);
+  
+  // 檢查每個按鈕
+  for (uint8_t i = 0; i < maxDisplay; i++) {
+    int16_t col = i % 2;
+    int16_t row = i / 2;
+    int16_t btnX = 20 + col * (btnW + gapX);
+    int16_t btnY = startY + row * (btnH + gapY);
+    
+    if (x >= btnX && x <= btnX + btnW && y >= btnY && y <= btnY + btnH) {
+      return i; // 返回按鈕索引
+    }
+  }
+  
+  return -1; // 沒有按到任何按鈕
 }
 
 

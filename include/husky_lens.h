@@ -30,6 +30,9 @@ public:
   // 獲取辨識到的物件數量
   int getObjectCount();
 
+  // 忘記（刪除）已學習的人臉
+  bool forgetFace(uint8_t faceID);
+
 private:
   HUSKYLENS huskylens;                // 官方函式庫物件
   HardwareSerial *serial;             // UART 串列物件指標

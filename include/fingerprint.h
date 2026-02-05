@@ -22,6 +22,12 @@ public:
   uint8_t getNextAvailableID();
   // 設置 Screen 對象用於 UI 更新
   void setDisplay(Screen* disp);
+  // 刪除指紋
+  bool deleteFinger(uint8_t id);
+  // 獲取已存儲的指紋數量
+  uint8_t getStoredCount();
+  // 檢查指定 ID 是否已存儲
+  bool isFingerStored(uint8_t id);
 
 private:
   HardwareSerial*fpSerial;

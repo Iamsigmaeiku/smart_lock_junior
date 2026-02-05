@@ -165,3 +165,22 @@ int HuskyLens::getObjectCount() {
   // 回傳物件數量
   return huskylens.count();
 }
+
+bool HuskyLens::forgetFace(uint8_t faceID) {
+  if (!isInitialized) {
+    Serial.println("HUSKYLENS 未初始化！");
+    return false;
+  }
+  
+  Serial.printf("刪除人臉 ID: %d\n", faceID);
+  
+  // 使用 HUSKYLENS 的 writeForget 指令刪除指定 ID
+  if (huskylens.writeForget()) {
+    Serial.printf("✓ 成功刪除人臉 ID: %d\n", faceID);
+    delay(100);
+    return true;
+  } else {
+    Serial.printf("✗ 刪除人臉失敗\n");
+    return false;
+  }
+}

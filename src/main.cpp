@@ -40,6 +40,10 @@ uint8_t passwordChangeStep = 0; // 0=未開始, 1=輸入舊密碼, 2=輸入新�
 String oldPasswordInput = "";
 String newPasswordInput = "";
 
+// 刪除功能相關變量
+uint8_t removeItemIDs[10]; // 存儲當前要刪除的項目 ID 列表（最多10個）
+uint8_t removeItemCount = 0; // 當前列表中的項目數量
+
 enum AuthMethod {
   NONE,
   FINGERPRINT,
@@ -364,8 +368,35 @@ void loop() {
           // Remove 按鈕
           currentSettingType = btnPress - 4;
           currentState = SETTING_REMOVE;
-          display.showRemoveMenu(currentSettingType);
-          Serial.printf("刪除類型: %d\n", currentSettingType);
+          
+          // 載入對應的列表
+          removeItemCount = 0;
+          if (currentSettingType == 0) {
+            // Fingerprint: 掃描 ID 1-10
+            for (uint8_t id = 1; id <= 10 && removeItemCount < 10; id++) {
+              if (fingerSensor.isFingerStored(id)) {
+                removeItemIDs[removeItemCount++] = id;
+              }
+            }
+          } else if (currentSettingType == 1) {
+            // Face: 假設 ID 1-10（簡化處理）
+            for (uint8_t id = 1; id <= 10; id++) {
+              removeItemIDs[removeItemCount++] = id;
+            }
+          } else if (currentSettingType == 2) {
+            // RFID: 使用卡片數量
+            removeItemCount = rfidReader.getCardCount();
+            for (uint8_t i = 0; i < removeItemCount && i < 10; i++) {
+              removeItemIDs[i] = i; // 索引即 ID
+            }
+          } else if (currentSettingType == 3) {
+            // Password: 只有一個重置選項
+            removeItemCount = 1;
+            removeItemIDs[0] = 0;
+          }
+          
+          display.showRemoveMenu(currentSettingType, removeItemIDs, removeItemCount);
+          Serial.printf("刪除類型: %d, 項目數: %d\n", currentSettingType, removeItemCount);
           delay(300);
         }
       }
@@ -536,20 +567,85 @@ void loop() {
     }
     
     case SETTING_REMOVE: {
-      // 檢查 header back 按鈕
       if (display.isTouched()) {
         int16_t x, y;
         display.getTouchPoint(x, y);
         
+        // 檢查 header back 按鈕
         Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
         if (headerPress == Screen::HEADER_BACK) {
           Serial.println("返回 Setting 選單");
           currentState = SETTING_MENU;
           display.showSettingMenu();
           delay(300);
+          break;
         }
         
-        // TODO: 實作刪除邏輯（需要列表和選擇介面）
+        // 檢查列表項目點擊
+        int8_t selectedIndex = display.getRemoveMenuPress(x, y, removeItemCount);
+        if (selectedIndex >= 0) {
+          Serial.printf("選擇刪除項目: %d\n", selectedIndex);
+          bool deleteSuccess = false;
+          
+          // 根據類型執行刪除操作
+          if (currentSettingType == 0) {
+            // Fingerprint
+            uint8_t fingerId = removeItemIDs[selectedIndex];
+            deleteSuccess = fingerSensor.deleteFinger(fingerId);
+            Serial.printf("刪除指紋 ID %d: %s\n", fingerId, deleteSuccess ? "成功" : "失敗");
+          } else if (currentSettingType == 1) {
+            // Face
+            uint8_t faceId = removeItemIDs[selectedIndex];
+            deleteSuccess = aiCamera.forgetFace(faceId);
+            Serial.printf("刪除人臉 ID %d: %s\n", faceId, deleteSuccess ? "成功" : "失敗");
+          } else if (currentSettingType == 2) {
+            // RFID
+            deleteSuccess = rfidReader.deleteCard(selectedIndex);
+            Serial.printf("刪除卡片索引 %d: %s\n", selectedIndex, deleteSuccess ? "成功" : "失敗");
+          } else if (currentSettingType == 3) {
+            // Password reset
+            pwManager.resetToDefault();
+            deleteSuccess = true;
+            Serial.println("密碼已重置為預設值");
+          }
+          
+          // 顯示結果
+          if (deleteSuccess) {
+            display.showSuccess();
+          } else {
+            display.showFailed();
+          }
+          delay(1500);
+          
+          // 重新載入列表
+          removeItemCount = 0;
+          if (currentSettingType == 0) {
+            // Fingerprint: 重新掃描
+            for (uint8_t id = 1; id <= 10 && removeItemCount < 10; id++) {
+              if (fingerSensor.isFingerStored(id)) {
+                removeItemIDs[removeItemCount++] = id;
+              }
+            }
+          } else if (currentSettingType == 1) {
+            // Face: 假設 ID 1-10
+            for (uint8_t id = 1; id <= 10; id++) {
+              removeItemIDs[removeItemCount++] = id;
+            }
+          } else if (currentSettingType == 2) {
+            // RFID: 重新獲取數量
+            removeItemCount = rfidReader.getCardCount();
+            for (uint8_t i = 0; i < removeItemCount && i < 10; i++) {
+              removeItemIDs[i] = i;
+            }
+          } else if (currentSettingType == 3) {
+            // Password: 保持一個選項
+            removeItemCount = 1;
+            removeItemIDs[0] = 0;
+          }
+          
+          display.showRemoveMenu(currentSettingType, removeItemIDs, removeItemCount);
+          delay(300);
+        }
       }
       break;
     }

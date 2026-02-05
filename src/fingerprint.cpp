@@ -107,3 +107,49 @@ uint8_t Fingerprint::getNextAvailableID() {
 void Fingerprint::setDisplay(Screen* disp) {
   display = disp;
 }
+
+bool Fingerprint::deleteFinger(uint8_t id) {
+  if(!ensureInit()) {
+    Serial.println("指紋模組未初始化！");
+    return false;
+  }
+  
+  Serial.printf("刪除指紋 ID: %d\n", id);
+  uint8_t result = finger->deleteModel(id);
+  
+  if (result == FINGERPRINT_OK) {
+    Serial.printf("✓ 成功刪除指紋 ID: %d\n", id);
+    return true;
+  } else {
+    Serial.printf("✗ 刪除失敗 (錯誤碼: %d)\n", result);
+    return false;
+  }
+}
+
+uint8_t Fingerprint::getStoredCount() {
+  if(!ensureInit()) {
+    return 0;
+  }
+  
+  // AS608 使用 templateCount 來獲取已存儲的指紋數量
+  uint8_t count = 0;
+  
+  // 掃描所有可能的 ID (1-127)
+  for (uint8_t id = 1; id <= 127; id++) {
+    if (finger->loadModel(id) == FINGERPRINT_OK) {
+      count++;
+    }
+  }
+  
+  Serial.printf("已存儲指紋數量: %d\n", count);
+  return count;
+}
+
+bool Fingerprint::isFingerStored(uint8_t id) {
+  if(!ensureInit()) {
+    return false;
+  }
+  
+  // 嘗試加載指定 ID 的模型來檢查是否存在
+  return (finger->loadModel(id) == FINGERPRINT_OK);
+}

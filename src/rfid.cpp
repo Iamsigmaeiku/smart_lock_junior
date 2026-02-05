@@ -201,3 +201,30 @@ bool RFID::isCardRegistered(const uint8_t* uid) {
 
   return false;
 }
+
+bool RFID::deleteCard(uint8_t index) {
+  uint8_t count = getCardCount();
+  
+  // 檢查索引是否有效
+  if (index >= count) {
+    Serial.printf("✗ 無效的卡片索引: %d (總數: %d)\n", index, count);
+    return false;
+  }
+  
+  Serial.printf("刪除卡片索引: %d\n", index);
+  
+  // 將後面的卡片往前移動
+  for (uint8_t i = index; i < count - 1; i++) {
+    uint8_t nextUID[4];
+    getCardUID(i + 1, nextUID);
+    saveCardUID(i, nextUID);
+  }
+  
+  // 減少計數
+  count--;
+  saveCardCount(count);
+  EEPROM.commit();
+  
+  Serial.printf("✓ 成功刪除卡片！目前已註冊 %d 張卡片\n", count);
+  return true;
+}
