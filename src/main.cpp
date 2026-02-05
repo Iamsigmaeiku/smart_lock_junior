@@ -53,22 +53,38 @@ void setup() {
   Serial.println("智慧門鎖系統啟動中...");
   Serial.println("================================");
 
+  Serial.println("[1/8] 初始化指紋模組...");
   fingerSensor.init();
+  
+  Serial.println("[2/8] 初始化螢幕...");
   display.init();
   display.initTouch();
+  
+  Serial.println("[3/8] 初始化馬達...");
   doorMotor.init(MOTOR_PIN);
+  
+  Serial.println("[4/8] 初始化RFID讀卡器...");
   rfidReader.init();
+  
+  Serial.println("[5/8] 初始化HuskyLens...");
   aiCamera.init();
+  
+  Serial.println("[6/8] 初始化WiFi模組...");
   wifiModule.init();
+  
+  Serial.println("[7/8] 初始化密碼管理...");
   pwManager.init();
 
+  Serial.println("[8/8] 顯示歡迎畫面...");
   display.showWelcome();
   delay(2000);
 
   currentState = MENU;
   display.showMainMenu();
 
-  Serial.println("系統準備就緒！");
+  Serial.println("================================");
+  Serial.println("✓ 系統準備就緒！");
+  Serial.println("================================");
 }
 
 void loop() {

@@ -14,10 +14,20 @@ void HuskyLens::init() {
   
   delay(100);  // 等待串列埠穩定
   
-  // 初始化 HUSKYLENS 物件
-  while (!huskylens.begin(*serial)) {
-    Serial.println("HUSKYLENS 連線失敗！請檢查接線");
+  // 初始化 HUSKYLENS 物件（最多重試 10 次）
+  const int MAX_RETRY = 10;
+  int retry = 0;
+  while (retry < MAX_RETRY && !huskylens.begin(*serial)) {
+    Serial.printf("HUSKYLENS 連線失敗 (嘗試 %d/%d)...\n", retry + 1, MAX_RETRY);
     delay(1000);
+    retry++;
+  }
+  
+  // 如果重試次數用盡，標記為未初始化並返回
+  if (retry >= MAX_RETRY) {
+    Serial.println("⚠️ HUSKYLENS 初始化失敗，人臉辨識功能將無法使用");
+    isInitialized = false;
+    return;
   }
   
   Serial.println("HUSKYLENS 連線成功！");
