@@ -46,6 +46,7 @@ Rect getMenuButtonRect(uint8_t index); // 0..5
   void showAddRFID();
   void showAddPassword();
   void showRemoveMenu(uint8_t type); // 0=Finger, 1=Face, 2=RFID, 3=Password
+  void showEnrollStep(uint8_t step); // 顯示指紋註冊步驟 (1=第一次按壓, 2=移開, 3=第二次按壓)
 
   // 輔助函數
   bool isButtonPressed(int16_t x, int16_t y, int16_t btnX, int16_t btnY,

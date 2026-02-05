@@ -1,4 +1,5 @@
 #include "fingerprint.h"
+#include "screen.h"
 #include <Adafruit_Fingerprint.h>
 
 
@@ -11,6 +12,8 @@ void Fingerprint::init() {
   baudRate = 57600;
   tx = 17;
   rx = 16;
+  nextID = 1;
+  display = nullptr;
   fpSerial->begin(baudRate, SERIAL_8N1, rx, tx);
   Serial.println("初始化指紋傳感器...");
   delay(100);
@@ -29,7 +32,6 @@ bool Fingerprint::detectFinger() {
   if(!ensureInit()) {
     return false;
   }
-  // TODO: 檢測是否有手指放置
   return (finger->getImage() == FINGERPRINT_OK);
 }
 
@@ -50,7 +52,6 @@ bool Fingerprint::verifyFinger() {
   }
   lastmatchID = finger->fingerID;
   lastConfidence = finger->confidence;
-  // TODO: 驗證指紋是否匹配
   return true;
 }
 
@@ -61,30 +62,48 @@ bool Fingerprint::enrollFinger(uint8_t id) {
   int p = -1;
   //第一次
   Serial.println("please press your finger (1/2).");
+  if (display) display->showEnrollStep(1);
+  
   while (p != FINGERPRINT_OK) {
     p = finger->getImage();
     if (p == FINGERPRINT_NOFINGER) delay(80);
   }
   if (finger->image2Tz(1) != FINGERPRINT_OK) {
      Serial.println("first press fail.");
-    return false;}
+    return false;
+  }
+  
   //移開手指
-    Serial.println("remove finger.");
+  Serial.println("remove finger.");
+  if (display) display->showEnrollStep(2);
   delay(800);
   while (finger->getImage() != FINGERPRINT_NOFINGER) delay(80);
+  
   //第二次
   p = -1;
-    Serial.println("please press your finger (2/2).");
+  Serial.println("please press your finger (2/2).");
+  if (display) display->showEnrollStep(3);
+  
   while (p != FINGERPRINT_OK) {
     p = finger->getImage();
     if (p == FINGERPRINT_NOFINGER) delay(80);
   }
   if (finger->image2Tz(2) != FINGERPRINT_OK) {
-        Serial.println("second press fail.");
-      return false;}
+    Serial.println("second press fail.");
+    return false;
+  }
 
   if (finger->createModel() != FINGERPRINT_OK) return false;
   return (finger->storeModel(id) == FINGERPRINT_OK);
-  // TODO: 註冊新指紋
-  return false;
+}
+
+uint8_t Fingerprint::getNextAvailableID() {
+  if(!ensureInit()) {
+    return 1;
+  }
+  return nextID++;
+}
+
+void Fingerprint::setDisplay(Screen* disp) {
+  display = disp;
 }

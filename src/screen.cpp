@@ -433,6 +433,50 @@ void Screen::showAddFingerprint() {
   Serial.println("顯示：新增指紋");
 }
 
+void Screen::showEnrollStep(uint8_t step) {
+  tft.fillScreen(BG_DARK);
+  drawHeader("Add Finger", true, false);
+  
+  // 主內容卡片
+  tft.fillRoundRect(20, 70, 200, 160, 16, PASTEL_PINK);
+  
+  // 大圖標
+  tft.setTextSize(5);
+  tft.setTextColor(TEXT_DARK);
+  tft.setCursor(90, 100);
+  tft.print("F");
+  
+  // 根據步驟顯示不同提示
+  tft.setTextSize(2);
+  tft.setTextColor(TEXT_DARK);
+  
+  if (step == 1) {
+    // 第一次按壓
+    tft.setCursor(30, 160);
+    tft.print("Press your");
+    tft.setCursor(40, 185);
+    tft.print("finger");
+    tft.setCursor(50, 210);
+    tft.print("(1/2)");
+  } else if (step == 2) {
+    // 移開手指
+    tft.setCursor(35, 160);
+    tft.print("Remove");
+    tft.setCursor(40, 185);
+    tft.print("finger");
+  } else if (step == 3) {
+    // 第二次按壓
+    tft.setCursor(30, 160);
+    tft.print("Press your");
+    tft.setCursor(40, 185);
+    tft.print("finger");
+    tft.setCursor(50, 210);
+    tft.print("(2/2)");
+  }
+  
+  Serial.printf("顯示：註冊步驟 %d\n", step);
+}
+
 void Screen::showAddFace() {
   tft.fillScreen(BG_DARK);
   drawHeader("Add Face", true, false);

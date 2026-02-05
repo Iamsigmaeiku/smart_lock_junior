@@ -63,6 +63,9 @@ void setup() {
   display.init();
   display.initTouch();
   
+  // 連接指紋模組和螢幕以顯示 UI
+  fingerSensor.setDisplay(&display);
+  
   Serial.println("[3/8] 初始化馬達...");
   doorMotor.init(MOTOR_PIN);
   
@@ -457,10 +460,26 @@ void loop() {
       // 根據類型執行新增操作（非密碼）
       if (currentSettingType == 0) {
         // 指紋新增
-        if (fingerSensor.detectFinger()) {
-          // 這裡應該調用註冊指紋的函數
-          display.showSuccess();
+        static bool enrollStarted = false;
+        
+        if (!enrollStarted) {
+          enrollStarted = true;
+          uint8_t targetID = fingerSensor.getNextAvailableID();
+          Serial.printf("開始註冊指紋，ID: %d\n", targetID);
+          
+          // 調用阻塞式註冊函數（會自動更新 UI）
+          bool success = fingerSensor.enrollFinger(targetID);
+          
+          if (success) {
+            Serial.println("指紋註冊成功！");
+            display.showSuccess();
+          } else {
+            Serial.println("指紋註冊失敗！");
+            display.showFailed();
+          }
+          
           delay(2000);
+          enrollStarted = false;
           currentState = SETTING_MENU;
           display.showSettingMenu();
         }
