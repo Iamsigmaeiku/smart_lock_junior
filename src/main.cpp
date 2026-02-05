@@ -167,7 +167,24 @@ void loop() {
 }
 
 
-    case WAITING_INPUT:
+    case WAITING_INPUT: {
+      // 先檢查back按鈕
+      if (display.isTouched()) {
+        int16_t x, y;
+        display.getTouchPoint(x, y);
+        
+        Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
+        if (headerPress == Screen::HEADER_BACK) {
+          Serial.println("返回主選單");
+          lastAuthMethod = NONE;
+          currentState = MENU;
+          display.showMainMenu();
+          delay(300);
+          break;
+        }
+      }
+      
+      // 然後檢測感應器輸入
       if (fingerSensor.detectFinger()) {
         lastAuthMethod = FINGERPRINT;
         currentState = VERIFYING;
@@ -181,6 +198,7 @@ void loop() {
         currentState = VERIFYING;
       }
       break;
+    }
 
     case PASSWORD_INPUT: {
       static String enteredPW = "";
@@ -201,6 +219,18 @@ void loop() {
 
         int16_t x, y;
         display.getTouchPoint(x, y);
+        
+        // 先檢查header back按鈕
+        Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
+        if (headerPress == Screen::HEADER_BACK) {
+          Serial.println("返回主選單");
+          enteredPW = "";
+          currentState = MENU;
+          display.showMainMenu();
+          delay(300);
+          break;
+        }
+        
         int8_t key = display.getKeypadPress(x, y);
 
         if (key >= 0 && key <= 9) {
