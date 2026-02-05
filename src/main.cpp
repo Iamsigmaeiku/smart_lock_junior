@@ -36,6 +36,9 @@ enum SystemState {
 
 SystemState currentState = IDLE;
 uint8_t currentSettingType = 0; // 用於記錄當前選擇的設定類型 (0=Finger, 1=Face, 2=RFID, 3=Password)
+uint8_t passwordChangeStep = 0; // 0=未開始, 1=輸入舊密碼, 2=輸入新密碼
+String oldPasswordInput = "";
+String newPasswordInput = "";
 
 enum AuthMethod {
   NONE,
@@ -315,7 +318,12 @@ void loop() {
           if (btnPress == 0) display.showAddFingerprint();
           else if (btnPress == 1) display.showAddFace();
           else if (btnPress == 2) display.showAddRFID();
-          else if (btnPress == 3) display.showAddPassword();
+          else if (btnPress == 3) {
+            display.showAddPassword();
+            passwordChangeStep = 1; // 開始第一階段：輸入舊密碼
+            oldPasswordInput = "";
+            newPasswordInput = "";
+          }
           
           Serial.printf("新增類型: %d\n", btnPress);
           delay(300);
@@ -332,6 +340,8 @@ void loop() {
     }
     
     case SETTING_ADD: {
+      static unsigned long lastTouchTime = 0;
+      
       // 檢查 header back 按鈕
       if (display.isTouched()) {
         int16_t x, y;
@@ -340,14 +350,111 @@ void loop() {
         Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
         if (headerPress == Screen::HEADER_BACK) {
           Serial.println("返回 Setting 選單");
+          // 清理密碼相關狀態
+          passwordChangeStep = 0;
+          oldPasswordInput = "";
+          newPasswordInput = "";
           currentState = SETTING_MENU;
           display.showSettingMenu();
           delay(300);
           break;
         }
+        
+        // 處理密碼修改的鍵盤輸入
+        if (currentSettingType == 3) {
+          if (millis() - lastTouchTime < 200) break;
+          lastTouchTime = millis();
+          
+          int8_t key = display.getKeypadPress(x, y);
+          
+          // 數字鍵 0-9
+          if (key >= 0 && key <= 9) {
+            if (passwordChangeStep == 1) {
+              // 第一階段：輸入舊密碼
+              if (oldPasswordInput.length() < 8) {
+                oldPasswordInput += String(key);
+                display.updatePasswordDisplay(oldPasswordInput);
+                Serial.printf("輸入舊密碼: %s\n", oldPasswordInput.c_str());
+              }
+            } else if (passwordChangeStep == 2) {
+              // 第二階段：輸入新密碼
+              if (newPasswordInput.length() < 8) {
+                newPasswordInput += String(key);
+                display.updatePasswordDisplay(newPasswordInput);
+                Serial.printf("輸入新密碼: %s\n", newPasswordInput.c_str());
+              }
+            }
+          }
+          // C 鍵（清除）
+          else if (key == 10) {
+            if (passwordChangeStep == 1) {
+              oldPasswordInput = "";
+              display.updatePasswordDisplay(oldPasswordInput);
+              Serial.println("清除舊密碼");
+            } else if (passwordChangeStep == 2) {
+              newPasswordInput = "";
+              display.updatePasswordDisplay(newPasswordInput);
+              Serial.println("清除新密碼");
+            }
+          }
+          // OK 鍵（確認）
+          else if (key == 11) {
+            if (passwordChangeStep == 1) {
+              // 第一階段：驗證舊密碼
+              if (oldPasswordInput.length() < 4) {
+                display.showFailed();
+                delay(1500);
+                oldPasswordInput = "";
+                display.showAddPassword();
+              } else {
+                bool verified = pwManager.verifyPassword(oldPasswordInput);
+                if (verified) {
+                  Serial.println("舊密碼驗證成功，進入新密碼輸入");
+                  passwordChangeStep = 2;
+                  display.showAddPassword(); // 重新顯示鍵盤
+                  display.updatePasswordDisplay(""); // 清空顯示
+                  delay(300);
+                } else {
+                  Serial.println("舊密碼驗證失敗");
+                  display.showFailed();
+                  delay(2000);
+                  oldPasswordInput = "";
+                  passwordChangeStep = 0;
+                  currentState = SETTING_MENU;
+                  display.showSettingMenu();
+                }
+              }
+            } else if (passwordChangeStep == 2) {
+              // 第二階段：設定新密碼
+              if (newPasswordInput.length() < 4) {
+                display.showFailed();
+                delay(1500);
+                newPasswordInput = "";
+                display.showAddPassword();
+              } else {
+                bool success = pwManager.changePassword(oldPasswordInput, newPasswordInput);
+                if (success) {
+                  Serial.println("密碼修改成功");
+                  display.showSuccess();
+                  delay(2000);
+                } else {
+                  Serial.println("密碼修改失敗");
+                  display.showFailed();
+                  delay(2000);
+                }
+                // 清理並返回 Setting 選單
+                passwordChangeStep = 0;
+                oldPasswordInput = "";
+                newPasswordInput = "";
+                currentState = SETTING_MENU;
+                display.showSettingMenu();
+              }
+            }
+          }
+        }
       }
       
-      // 根據類型執行新增操作
+      // 根據類型執行新增操作（非密碼）
       if (currentSettingType == 0) {
         // 指紋新增
         if (fingerSensor.detectFinger()) {
@@ -376,7 +483,6 @@ void loop() {
           display.showSettingMenu();
         }
       }
-      // 密碼新增需要特殊處理（類似 PASSWORD_INPUT）
       break;
     }
     
