@@ -33,6 +33,20 @@ Rect getMenuButtonRect(uint8_t index); // 0..5
   // 校準測試
   void showCalibrationMarkers();                      // 顯示校準標記點
 
+  // Header 相關
+  enum HeaderTouch { HEADER_NONE = 0, HEADER_BACK = 1, HEADER_SETTING = 2 };
+  void drawHeader(const char* title, bool showBack, bool showSettings);
+  HeaderTouch getHeaderTouch(int16_t x, int16_t y);
+
+  // Setting 相關頁面
+  void showSettingMenu();
+  int8_t getSettingMenuPress(int16_t x, int16_t y); // 返回 0-7 (0-3=add, 4-7=remove) 或 -1
+  void showAddFingerprint();
+  void showAddFace();
+  void showAddRFID();
+  void showAddPassword();
+  void showRemoveMenu(uint8_t type); // 0=Finger, 1=Face, 2=RFID, 3=Password
+
   // 輔助函數
   bool isButtonPressed(int16_t x, int16_t y, int16_t btnX, int16_t btnY,
                        int16_t btnW, int16_t btnH);   // 判斷是否按中按鈕

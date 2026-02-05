@@ -23,6 +23,9 @@ Password pwManager;
 enum SystemState {
   IDLE,
   MENU,
+  SETTING_MENU,        // 新增：Setting 主頁面
+  SETTING_ADD,         // 新增：Setting 新增子頁面
+  SETTING_REMOVE,      // 新增：Setting 刪除子頁面
   WAITING_INPUT,
   PASSWORD_INPUT,
   VERIFYING,
@@ -32,6 +35,7 @@ enum SystemState {
 };
 
 SystemState currentState = IDLE;
+uint8_t currentSettingType = 0; // 用於記錄當前選擇的設定類型 (0=Finger, 1=Face, 2=RFID, 3=Password)
 
 enum AuthMethod {
   NONE,
@@ -78,26 +82,30 @@ void loop() {
     display.getTouchPoint(x, y);
 
 #if DEBUG_TOUCH_DOT
-    // 在你「程式認為的座標」畫點，幫你確認對不對
     display.display().fillCircle(x, y, 3, 0xFFFF);
     Serial.printf("[MENU TOUCH] x=%d y=%d\n", x, y);
     delay(80);
 #endif
 
-    // === 用 config.h 的座標，跟 Screen::showMainMenu() 畫的位置 100% 同步 ===
+    // 檢查 header 觸控
+    Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
+    if (headerPress == Screen::HEADER_SETTING) {
+      Serial.println("選擇：Setting");
+      currentState = SETTING_MENU;
+      display.showSettingMenu();
+      delay(300);
+      break;
+    }
+
+    // 檢查主選單按鈕（2x2 佈局，使用 getMenuButtonRect）
     int pressed = -1;
-
-    // Row 1: Finger / RFID
-    if (display.isButtonPressed(x, y, MENU_BTN_LEFT_X,  MENU_BTN_ROW1_Y, MENU_BTN_WIDTH, MENU_BTN_HEIGHT))  pressed = 0;
-    else if (display.isButtonPressed(x, y, MENU_BTN_RIGHT_X, MENU_BTN_ROW1_Y, MENU_BTN_WIDTH, MENU_BTN_HEIGHT)) pressed = 1;
-
-    // Row 2: Password / Face
-    else if (display.isButtonPressed(x, y, MENU_BTN_LEFT_X,  MENU_BTN_ROW2_Y, MENU_BTN_WIDTH, MENU_BTN_HEIGHT))  pressed = 2;
-    else if (display.isButtonPressed(x, y, MENU_BTN_RIGHT_X, MENU_BTN_ROW2_Y, MENU_BTN_WIDTH, MENU_BTN_HEIGHT)) pressed = 3;
-
-    // Row 3: Enroll / Setting
-    else if (display.isButtonPressed(x, y, MENU_BTN_LEFT_X,  MENU_BTN_ROW3_Y, MENU_BTN_WIDTH, MENU_BTN_HEIGHT))  pressed = 4;
-    else if (display.isButtonPressed(x, y, MENU_BTN_RIGHT_X, MENU_BTN_ROW3_Y, MENU_BTN_WIDTH, MENU_BTN_HEIGHT)) pressed = 5;
+    for (uint8_t i = 0; i < 4; i++) {
+      Screen::Rect r = display.getMenuButtonRect(i);
+      if (display.isButtonPressed(x, y, r.x, r.y, r.w, r.h)) {
+        pressed = i;
+        break;
+      }
+    }
 
     if (pressed != -1) {
       switch (pressed) {
@@ -126,17 +134,7 @@ void loop() {
           Serial.println("選擇：人臉驗證");
           lastAuthMethod = FACE_RECOGNITION;
           currentState = WAITING_INPUT;
-          display.showWaitingForFinger(); // 你可改 showWaitingForFace()
-          break;
-
-        case 4: // Enroll
-          Serial.println("選擇：註冊卡片");
-          currentState = ENROLLING;
-          display.showWaitingForCard();
-          break;
-
-        case 5: // Setting
-          Serial.println("選擇：Setting（未實作）");
+          display.showWaitingForFinger();
           break;
       }
 
@@ -275,6 +273,115 @@ void loop() {
         display.showMainMenu();
       }
       break;
+
+    case SETTING_MENU: {
+      if (display.isTouched()) {
+        int16_t x, y;
+        display.getTouchPoint(x, y);
+        
+        // 檢查 header back 按鈕
+        Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
+        if (headerPress == Screen::HEADER_BACK) {
+          Serial.println("返回主選單");
+          currentState = MENU;
+          display.showMainMenu();
+          delay(300);
+          break;
+        }
+        
+        // 檢查 Setting 頁面按鈕
+        int8_t btnPress = display.getSettingMenuPress(x, y);
+        if (btnPress >= 0 && btnPress <= 3) {
+          // Add 按鈕 (0=Finger, 1=Face, 2=RFID, 3=Password)
+          currentSettingType = btnPress;
+          currentState = SETTING_ADD;
+          
+          if (btnPress == 0) display.showAddFingerprint();
+          else if (btnPress == 1) display.showAddFace();
+          else if (btnPress == 2) display.showAddRFID();
+          else if (btnPress == 3) display.showAddPassword();
+          
+          Serial.printf("新增類型: %d\n", btnPress);
+          delay(300);
+        } else if (btnPress >= 4 && btnPress <= 7) {
+          // Remove 按鈕
+          currentSettingType = btnPress - 4;
+          currentState = SETTING_REMOVE;
+          display.showRemoveMenu(currentSettingType);
+          Serial.printf("刪除類型: %d\n", currentSettingType);
+          delay(300);
+        }
+      }
+      break;
+    }
+    
+    case SETTING_ADD: {
+      // 檢查 header back 按鈕
+      if (display.isTouched()) {
+        int16_t x, y;
+        display.getTouchPoint(x, y);
+        
+        Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
+        if (headerPress == Screen::HEADER_BACK) {
+          Serial.println("返回 Setting 選單");
+          currentState = SETTING_MENU;
+          display.showSettingMenu();
+          delay(300);
+          break;
+        }
+      }
+      
+      // 根據類型執行新增操作
+      if (currentSettingType == 0) {
+        // 指紋新增
+        if (fingerSensor.detectFinger()) {
+          // 這裡應該調用註冊指紋的函數
+          display.showSuccess();
+          delay(2000);
+          currentState = SETTING_MENU;
+          display.showSettingMenu();
+        }
+      } else if (currentSettingType == 2) {
+        // RFID 新增
+        if (rfidReader.detectCard()) {
+          if (rfidReader.enrollCard()) display.showSuccess();
+          else display.showFailed();
+          delay(2000);
+          currentState = SETTING_MENU;
+          display.showSettingMenu();
+        }
+      } else if (currentSettingType == 1) {
+        // 人臉新增
+        if (aiCamera.detectFace()) {
+          // 這裡應該調用註冊人臉的函數
+          display.showSuccess();
+          delay(2000);
+          currentState = SETTING_MENU;
+          display.showSettingMenu();
+        }
+      }
+      // 密碼新增需要特殊處理（類似 PASSWORD_INPUT）
+      break;
+    }
+    
+    case SETTING_REMOVE: {
+      // 檢查 header back 按鈕
+      if (display.isTouched()) {
+        int16_t x, y;
+        display.getTouchPoint(x, y);
+        
+        Screen::HeaderTouch headerPress = display.getHeaderTouch(x, y);
+        if (headerPress == Screen::HEADER_BACK) {
+          Serial.println("返回 Setting 選單");
+          currentState = SETTING_MENU;
+          display.showSettingMenu();
+          delay(300);
+        }
+        
+        // TODO: 實作刪除邏輯（需要列表和選擇介面）
+      }
+      break;
+    }
 
     case ENROLLING:
       if (rfidReader.detectCard()) {

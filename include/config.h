@@ -55,15 +55,15 @@
 #define SCREEN_WIDTH  240
 #define SCREEN_HEIGHT 320
 
-// 主選單按鈕佈局
-#define MENU_BTN_LEFT_X    10
-#define MENU_BTN_RIGHT_X   130
-#define MENU_BTN_WIDTH     110
-#define MENU_BTN_HEIGHT    60
+// 主選單按鈕佈局 (2x2 - 已棄用，改用 getMenuButtonRect)
+// Header 高度
+#define HEADER_HEIGHT      40
 
-#define MENU_BTN_ROW1_Y    50   // Finger, RFID
-#define MENU_BTN_ROW2_Y    120  // Password, Face
-#define MENU_BTN_ROW3_Y    190  // Enroll, Setting
+// Setting 頁面按鈕區域
+#define SETTING_ADD_TOP    50
+#define SETTING_ADD_BOTTOM 170
+#define SETTING_DEL_TOP    180
+#define SETTING_DEL_BOTTOM 310
 
 
 //WiFi推波設定
