@@ -9,7 +9,7 @@ void HuskyLens::init() {
   lastRecognizedID = -1;
   
   // 初始化 UART2 (GPIO9=RX, GPIO10=TX, 波特率 9600)
-  serial = &Serial2;
+  serial = &Serial1;
   serial->begin(9600, SERIAL_8N1, HUSKYLENS_RX, HUSKYLENS_TX);
   
   delay(100);  // 等待串列埠穩定
