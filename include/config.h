@@ -69,5 +69,12 @@
 //WiFi推波設定
 #define DISCORD_WEBHOOK_URL "https://discord.com/api/webhooks/1467471815801831516/vm3TmYFn-mKYoXaDZ5kdK4E4k_RnmcbSSUCYrT2hNGBr8-0sx76Tl5xaFPfRaEbxNyF-"
 
+#define LED_R_PIN  32
+
+#define LED_G_PIN  33
+
+#define BUZZ_PIN   27
+#define BUZZ_ACTIVE 1   // 1=有源蜂鳴器(給HIGH就叫)；0=無源(用tone)
+#define UI_RESULT_HOLD_MS 800   // 成功/失敗 LED 維持時間(ms)，800=0.8秒
 
 #endif

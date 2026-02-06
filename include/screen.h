@@ -45,6 +45,7 @@ Rect getMenuButtonRect(uint8_t index); // 0..5
   void showAddFace();
   void showAddRFID();
   void showAddPassword();
+  void showPasswordKeypad(const char* title, const char* hint);
   void showRemoveMenu(uint8_t type, uint8_t* ids, uint8_t count); // 顯示刪除選單，傳入 ID 列表和數量
   int8_t getRemoveMenuPress(int16_t x, int16_t y, uint8_t count); // 檢測刪除選單的按鈕點擊，返回索引或 -1
   void showEnrollStep(uint8_t step); // 顯示指紋註冊步驟 (1=第一次按壓, 2=移開, 3=第二次按壓)
