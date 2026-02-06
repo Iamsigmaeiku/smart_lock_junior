@@ -231,7 +231,8 @@ enum SystemState {
   VERIFYING,
   UNLOCKING,
   LOCKED,
-  ENROLLING
+  ENROLLING,
+  CHANGE_PASSWORD
 };
 
 SystemState currentState = IDLE;
