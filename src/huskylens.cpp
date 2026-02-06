@@ -14,11 +14,21 @@ void HuskyLens::init() {
   serial->begin(9600, SERIAL_8N1, HUSKYLENS_RX, HUSKYLENS_TX);
 
   delay(100);  // 等待串列埠穩定
-
-  // 初始化 HUSKYLENS 物件
-  while (!huskylens.begin(*serial)) {
-    Serial.println("HUSKYLENS 連線失敗！請檢查接線");
+  
+  // 初始化 HUSKYLENS 物件（最多重試 10 次）
+  const int MAX_RETRY = 10;
+  int retry = 0;
+  while (retry < MAX_RETRY && !huskylens.begin(*serial)) {
+    Serial.printf("HUSKYLENS 連線失敗 (嘗試 %d/%d)...\n", retry + 1, MAX_RETRY);
     delay(1000);
+    retry++;
+  }
+  
+  // 如果重試次數用盡，標記為未初始化並返回
+  if (retry >= MAX_RETRY) {
+    Serial.println("⚠️ HUSKYLENS 初始化失敗，人臉辨識功能將無法使用");
+    isInitialized = false;
+    return;
   }
 
   Serial.println("HUSKYLENS 連線成功！");
@@ -155,4 +165,23 @@ int HuskyLens::getObjectCount() {
 
   // 回傳物件數量
   return huskylens.count();
+}
+
+bool HuskyLens::forgetFace(uint8_t faceID) {
+  if (!isInitialized) {
+    Serial.println("HUSKYLENS 未初始化！");
+    return false;
+  }
+  
+  Serial.printf("刪除人臉 ID: %d\n", faceID);
+  
+  // 使用 HUSKYLENS 的 writeForget 指令刪除指定 ID
+  if (huskylens.writeForget()) {
+    Serial.printf("✓ 成功刪除人臉 ID: %d\n", faceID);
+    delay(100);
+    return true;
+  } else {
+    Serial.printf("✗ 刪除人臉失敗\n");
+    return false;
+  }
 }

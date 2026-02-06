@@ -25,6 +25,12 @@ public:
   // 註冊新卡片
   bool enrollCard();
 
+  // 刪除卡片
+  bool deleteCard(uint8_t index);
+
+  // 獲取已註冊卡片數量
+  uint8_t getCardCount();
+
 private:
   MFRC522 mfrc522;
   uint8_t currentUID[4];
@@ -37,7 +43,6 @@ private:
   static const uint16_t EEPROM_ADDR_CARDS = 1;
 
   // 內部輔助函數
-  uint8_t getCardCount();
   void saveCardCount(uint8_t count);
   bool getCardUID(uint8_t index, uint8_t* uid);
   void saveCardUID(uint8_t index, const uint8_t* uid);

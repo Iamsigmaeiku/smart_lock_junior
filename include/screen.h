@@ -34,6 +34,23 @@ Rect getMenuButtonRect(uint8_t index); // 0..5
   // 校準測試
   void showCalibrationMarkers();                      // 顯示校準標記點
 
+  // Header 相關
+  enum HeaderTouch { HEADER_NONE = 0, HEADER_BACK = 1, HEADER_SETTING = 2 };
+  void drawHeader(const char* title, bool showBack, bool showSettings);
+  HeaderTouch getHeaderTouch(int16_t x, int16_t y);
+
+  // Setting 相關頁面
+  void showSettingMenu();
+  int8_t getSettingMenuPress(int16_t x, int16_t y); // 返回 0-7 (0-3=add, 4-7=remove) 或 -1
+  void showAddFingerprint();
+  void showAddFace();
+  void showAddRFID();
+  void showAddPassword();
+  void showPasswordKeypad(const char* title, const char* hint);
+  void showRemoveMenu(uint8_t type, uint8_t* ids, uint8_t count); // 顯示刪除選單，傳入 ID 列表和數量
+  int8_t getRemoveMenuPress(int16_t x, int16_t y, uint8_t count); // 檢測刪除選單的按鈕點擊，返回索引或 -1
+  void showEnrollStep(uint8_t step); // 顯示指紋註冊步驟 (1=第一次按壓, 2=移開, 3=第二次按壓)
+
   // 輔助函數
   bool isButtonPressed(int16_t x, int16_t y, int16_t btnX, int16_t btnY,
                        int16_t btnW, int16_t btnH);   // 判斷是否按中按鈕
